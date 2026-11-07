@@ -34,6 +34,11 @@ export const standardRules = {
   // Owner rule: an exported function or method states its parameter and return types,
   // so its contract is written down rather than inferred from the body.
   "@typescript-eslint/explicit-module-boundary-types": "error",
+  // Owner decision: strict OOP. Every class member states its accessibility, a field never
+  // reassigned after construction is readonly, and members appear in one fixed order.
+  "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
+  "@typescript-eslint/prefer-readonly": "error",
+  "@typescript-eslint/member-ordering": "error",
 };
 
 /** Node and web globals our code uses, for plain .js/.mjs files (TS files need none). */
