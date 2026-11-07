@@ -30,6 +30,9 @@ export const standardRules = {
   "no-empty": ["error", { allowEmptyCatch: false }],
   // No browser alert/confirm/prompt: use the product's own UI.
   "no-alert": "error",
+  // Owner rule: an exported function or method states its parameter and return types,
+  // so its contract is written down rather than inferred from the body.
+  "@typescript-eslint/explicit-module-boundary-types": "error",
 };
 
 /** Node and web globals our code uses, for plain .js/.mjs files (TS files need none). */

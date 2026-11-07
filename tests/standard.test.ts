@@ -20,6 +20,7 @@ const CONTRACT = [
   "@typescript-eslint/no-require-imports",
   "no-empty",
   "no-alert",
+  "@typescript-eslint/explicit-module-boundary-types",
 ];
 
 describe("@tracepass/code-standard ESLint rules", () => {
@@ -44,6 +45,10 @@ describe("@tracepass/code-standard ESLint rules", () => {
 
   it("includes the type-aware rules: a forgotten await is reported", async () => {
     expect(await lint("violations.ts")).toContain("@typescript-eslint/no-floating-promises");
+  });
+
+  it("requires an exported function to state its return type", async () => {
+    expect(await lint("inferred-return.ts")).toEqual(["@typescript-eslint/explicit-module-boundary-types"]);
   });
 
   it("still forbids require in TypeScript", async () => {

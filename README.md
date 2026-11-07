@@ -50,6 +50,7 @@ On top of that base:
 | `@typescript-eslint/no-require-imports` | ES modules only |
 | `no-empty` (empty `catch` included) | An empty block hides a failure; a deliberate one says why in a comment |
 | `no-alert` | No browser `alert`/`confirm`/`prompt` |
+| `@typescript-eslint/explicit-module-boundary-types` | An exported function or method states its parameter and return types: its contract is written down, not inferred |
 
 A `.cjs` file is CommonJS by definition, so there (and only there) `require`, `module`,
 `exports`, `__dirname` and `__filename` are allowed.
