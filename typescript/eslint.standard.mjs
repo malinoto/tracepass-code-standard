@@ -54,7 +54,12 @@ const commonJsFiles = {
       ["require", "module", "exports", "__dirname", "__filename"].map((n) => [n, "readonly"]),
     ),
   },
-  rules: { "@typescript-eslint/no-require-imports": "off" },
+  rules: {
+    "@typescript-eslint/no-require-imports": "off",
+    // Node wraps a CommonJS file in a function, so its top-level bindings are module
+    // scoped and cannot redeclare a global (e.g. `const crypto = require("node:crypto")`).
+    "no-redeclare": ["error", { builtinGlobals: false }],
+  },
 };
 
 export const standard = [
