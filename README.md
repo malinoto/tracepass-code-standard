@@ -33,6 +33,17 @@ export default [
 }
 ```
 
+### Before a repo has adopted it
+
+Lint new or changed files of a sibling checkout with this standard, from that repo's root:
+
+```sh
+bash ../tracepass-code-standard/scripts/lint-with-standard.sh <files…>
+```
+
+It uses this checkout's ESLint and plugins (`npm install` here first) and the repo's own
+`tsconfig` for the type-aware rules, and leaves nothing behind.
+
 ## Formatting
 
 `@tracepass/code-standard/prettier` holds the shared Prettier settings: double quotes,
