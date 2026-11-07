@@ -60,6 +60,9 @@ export const relaxedRules = {
   "@typescript-eslint/array-type": "off", // T[] vs Array<T>: equivalent
   "@typescript-eslint/dot-notation": "off", // obj.key vs obj["key"]: equivalent
   "@typescript-eslint/consistent-type-definitions": "off", // interface vs type: equivalent here
+  // It rewrites `x as T` into `x!`, which no-non-null-assertion forbids: the two
+  // contradict, and the ban is the rule that keeps code honest (owner decision).
+  "@typescript-eslint/non-nullable-type-assertion-style": "off",
 };
 
 /** Node and web globals our code uses, for plain .js/.mjs files (TS files need none). */

@@ -29,11 +29,12 @@ const CONTRACT = [
 ];
 
 describe("@tracepass/code-standard ESLint rules", () => {
-  it("switches off only the contracted equivalent-spelling rules", () => {
+  it("switches off only the contracted rules (equivalent spellings, the `!`-pushing cast rule)", () => {
     expect(Object.keys(relaxedRules).sort()).toEqual([
       "@typescript-eslint/array-type",
       "@typescript-eslint/consistent-type-definitions",
       "@typescript-eslint/dot-notation",
+      "@typescript-eslint/non-nullable-type-assertion-style",
     ]);
   });
 
@@ -102,6 +103,10 @@ describe("@tracepass/code-standard ESLint rules", () => {
 
   it('leaves equivalent spellings alone: T[] vs Array<T>, obj.key vs obj["key"], interface vs type', async () => {
     expect(await lint("equivalent-spellings.ts")).toEqual([]);
+  });
+
+  it("does not push a cast toward `!`, which no-non-null-assertion forbids", async () => {
+    expect(await lint("non-null-cast.ts")).toEqual([]);
   });
 
   it("does not require a JSDoc or a return type on a React component", async () => {
