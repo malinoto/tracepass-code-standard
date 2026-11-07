@@ -41,11 +41,28 @@ const standardGlobals = Object.fromEntries(
   ].map((name) => [name, "readonly"]),
 );
 
+/**
+ * A `.cjs` file is CommonJS by definition (Node treats it so whatever the package type),
+ * so `require`, `module`, `exports`, `__dirname` and `__filename` are correct there.
+ * This block applies only to `.cjs`; every other file keeps the ES-modules rule.
+ */
+const commonJsFiles = {
+  files: ["**/*.cjs"],
+  languageOptions: {
+    sourceType: "commonjs",
+    globals: Object.fromEntries(
+      ["require", "module", "exports", "__dirname", "__filename"].map((n) => [n, "readonly"]),
+    ),
+  },
+  rules: { "@typescript-eslint/no-require-imports": "off" },
+};
+
 export const standard = [
   { ignores: standardIgnores },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { languageOptions: { globals: standardGlobals }, rules: standardRules },
+  commonJsFiles,
 ];
 
 export default standard;

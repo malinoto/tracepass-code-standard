@@ -38,6 +38,14 @@ describe("@tracepass/code-standard ESLint rules", () => {
     expect(await lint("clean.ts")).toEqual([]);
   });
 
+  it("accepts require/module/__dirname in a .cjs file, which is CommonJS by definition", async () => {
+    expect(await lint("commonjs.cjs")).toEqual([]);
+  });
+
+  it("still forbids require in TypeScript", async () => {
+    expect(await lint("violations.ts")).toContain("@typescript-eslint/no-require-imports");
+  });
+
   it("sets every one of its own rules at error severity", () => {
     for (const [rule, setting] of Object.entries(standardRules)) {
       const level = Array.isArray(setting) ? setting[0] : setting;
