@@ -5,6 +5,9 @@
 {
   "compilerOptions": {
     "strict": true,
+    // A lookup by index or key (items[0], prices["growth"]) may find nothing; the type
+    // says so, and lint stops calling the guard against it unnecessary (owner decision).
+    "noUncheckedIndexedAccess": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   }

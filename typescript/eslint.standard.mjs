@@ -191,6 +191,10 @@ const frameworkRelief = {
   },
 };
 
+/**
+ * The full standard as a flat config: spread it first in a repo's eslint.config.
+ * @type {import("eslint").Linter.Config[]}
+ */
 export const standard = [
   { ignores: standardIgnores },
   js.configs.recommended,

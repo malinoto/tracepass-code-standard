@@ -11,6 +11,7 @@ const fixture = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, im
 async function lint(name: string) {
   const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: standard });
   const [result] = await eslint.lintFiles([fixture(name)]);
+  if (!result) throw new Error(`ESLint returned no result for ${name}`);
   return result.messages.map((m) => m.ruleId);
 }
 
@@ -148,6 +149,15 @@ describe("@tracepass/code-standard TypeScript settings", () => {
     );
     const json: unknown = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, ""));
     expect(json).toMatchObject({ compilerOptions: { strict: true } });
+  });
+
+  it("makes every index lookup admit a missing value (noUncheckedIndexedAccess)", () => {
+    const raw = readFileSync(
+      new URL("../typescript/tsconfig.standard.json", import.meta.url),
+      "utf8",
+    );
+    const json: unknown = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, ""));
+    expect(json).toMatchObject({ compilerOptions: { noUncheckedIndexedAccess: true } });
   });
 });
 
