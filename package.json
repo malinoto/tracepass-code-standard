@@ -1,0 +1,40 @@
+{
+  "name": "@tracepass/code-standard",
+  "version": "1.0.0",
+  "description": "TracePass's shared coding standard: the ESLint rules and TypeScript compiler settings every TracePass TypeScript repository uses.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "TracePass LTD (https://tracepass.eu)",
+  "homepage": "https://github.com/malinoto/tracepass-code-standard#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malinoto/tracepass-code-standard.git"
+  },
+  "keywords": ["eslint-config", "tsconfig", "typescript", "coding-standard"],
+  "exports": {
+    "./eslint": "./typescript/eslint.standard.mjs",
+    "./tsconfig.json": "./typescript/tsconfig.standard.json",
+    "./package.json": "./package.json"
+  },
+  "files": ["typescript", "README.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.1",
+    "vitest": "^4.0.0"
+  }
+}

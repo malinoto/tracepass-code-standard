@@ -1,0 +1,11 @@
+// TracePass coding standard — the shared TypeScript compiler settings.
+// Published as @tracepass/code-standard. A repo's tsconfig.json extends
+// "@tracepass/code-standard/tsconfig.json" and adds only what its runtime needs (module
+// system, JSX, paths, includes); it never turns a setting here off.
+{
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}

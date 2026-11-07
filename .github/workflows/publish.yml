@@ -1,0 +1,72 @@
+# Publishes @tracepass/code-standard to npm on every v*.*.* tag push, with an npm
+# provenance attestation (the package was built by this workflow, from this repository
+# and commit).
+#
+# ─── ONE-TIME SETUP ────────────────────────────────────────────────────────────
+#
+# OIDC trusted publishing (no long-lived secrets). The package must exist first, so
+# the first version is published once by hand without provenance; then:
+#   1. https://www.npmjs.com/package/@tracepass/code-standard/access
+#   2. Trusted Publishers → Add a publisher → GitHub Actions.
+#   3. Organization or user: malinoto · Repository: tracepass-code-standard ·
+#      Workflow filename: publish.yml · Environment: (blank)
+#   4. Allow npm publish, save. The repo must be PUBLIC for provenance.
+#
+# ─── RELEASE FLOW ──────────────────────────────────────────────────────────────
+#
+#   npm version patch|minor|major   # bumps package.json and creates the tag
+#   git push && git push origin v$(node -p "require('./package.json').version")
+#
+# The tag and package.json must match: the tag triggers this workflow, npm publishes
+# whatever package.json says. The tests and lint run again before publishing.
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 'lts/*'
+          # Without registry-url, `npm publish` 404s before it can attempt the OIDC exchange.
+          registry-url: 'https://registry.npmjs.org'
+      - name: Upgrade npm
+        # Trusted publishing via OIDC needs npm CLI >= 11.5.1.
+        run: npm install --global npm@latest
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+      - name: Publish to npm
+        # No NODE_AUTH_TOKEN: an empty token makes npm reject with ENEEDAUTH before
+        # it tries OIDC. Provenance comes from publishConfig.provenance in package.json.
+        run: npm publish
+
+  github-release:
+    name: GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create the release for this tag (skip if it exists)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists"
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+              --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
+          fi
