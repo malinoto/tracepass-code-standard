@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
+import { format } from "prettier";
+import prettierConfig from "../typescript/prettier.standard.mjs";
 import { describe, expect, it } from "vitest";
 import { relaxedRules, standard, standardRules } from "../typescript/eslint.standard.mjs";
 
@@ -65,7 +67,9 @@ describe("@tracepass/code-standard ESLint rules", () => {
   });
 
   it("requires an exported function to state its return type", async () => {
-    expect(await lint("inferred-return.ts")).toEqual(["@typescript-eslint/explicit-module-boundary-types"]);
+    expect(await lint("inferred-return.ts")).toEqual([
+      "@typescript-eslint/explicit-module-boundary-types",
+    ]);
   });
 
   it("requires a JSDoc on every exported function", async () => {
@@ -81,7 +85,9 @@ describe("@tracepass/code-standard ESLint rules", () => {
   });
 
   it("requires every class member to state its accessibility", async () => {
-    expect(await lint("class-implicit-access.ts")).toEqual(["@typescript-eslint/explicit-member-accessibility"]);
+    expect(await lint("class-implicit-access.ts")).toEqual([
+      "@typescript-eslint/explicit-member-accessibility",
+    ]);
   });
 
   it("requires readonly on a private field that is never reassigned", async () => {
@@ -92,7 +98,7 @@ describe("@tracepass/code-standard ESLint rules", () => {
     expect(await lint("class-member-order.ts")).toEqual([]);
   });
 
-  it("leaves equivalent spellings alone: T[] vs Array<T>, obj.key vs obj[\"key\"], interface vs type", async () => {
+  it('leaves equivalent spellings alone: T[] vs Array<T>, obj.key vs obj["key"], interface vs type', async () => {
     expect(await lint("equivalent-spellings.ts")).toEqual([]);
   });
 
@@ -106,7 +112,9 @@ describe("@tracepass/code-standard ESLint rules", () => {
 
   it("still requires them on library code", async () => {
     expect(await lint("missing-jsdoc.ts")).toEqual(["jsdoc/require-jsdoc"]);
-    expect(await lint("inferred-return.ts")).toEqual(["@typescript-eslint/explicit-module-boundary-types"]);
+    expect(await lint("inferred-return.ts")).toEqual([
+      "@typescript-eslint/explicit-module-boundary-types",
+    ]);
   });
 
   it("still forbids require in TypeScript", async () => {
@@ -123,8 +131,21 @@ describe("@tracepass/code-standard ESLint rules", () => {
 
 describe("@tracepass/code-standard TypeScript settings", () => {
   it("keeps strict mode on", () => {
-    const raw = readFileSync(new URL("../typescript/tsconfig.standard.json", import.meta.url), "utf8");
+    const raw = readFileSync(
+      new URL("../typescript/tsconfig.standard.json", import.meta.url),
+      "utf8",
+    );
     const json: unknown = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, ""));
     expect(json).toMatchObject({ compilerOptions: { strict: true } });
+  });
+});
+
+describe("@tracepass/code-standard Prettier settings", () => {
+  it("formats code the TracePass way", async () => {
+    const messy = "const x={a:1,b:'two'}\nif(x.a>0){console.log( 'yes' )}\n";
+    const formatted = await format(messy, { ...prettierConfig, parser: "typescript" });
+    expect(formatted).toBe(
+      'const x = { a: 1, b: "two" };\nif (x.a > 0) {\n  console.log("yes");\n}\n',
+    );
   });
 });

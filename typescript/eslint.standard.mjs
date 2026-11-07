@@ -55,9 +55,24 @@ export const relaxedRules = {
 /** Node and web globals our code uses, for plain .js/.mjs files (TS files need none). */
 const standardGlobals = Object.fromEntries(
   [
-    "process", "console", "Buffer", "URL", "URLSearchParams", "fetch", "crypto",
-    "Request", "Response", "Headers", "AbortController", "TextEncoder", "TextDecoder",
-    "structuredClone", "setTimeout", "clearTimeout", "setInterval", "clearInterval",
+    "process",
+    "console",
+    "Buffer",
+    "URL",
+    "URLSearchParams",
+    "fetch",
+    "crypto",
+    "Request",
+    "Response",
+    "Headers",
+    "AbortController",
+    "TextEncoder",
+    "TextDecoder",
+    "structuredClone",
+    "setTimeout",
+    "clearTimeout",
+    "setInterval",
+    "clearInterval",
   ].map((name) => [name, "readonly"]),
 );
 

@@ -33,6 +33,14 @@ export default [
 }
 ```
 
+## Formatting
+
+`@tracepass/code-standard/prettier` holds the shared Prettier settings: double quotes,
+semicolons, two-space indent, line width 100. Reference it with `"prettier":
+"@tracepass/code-standard/prettier"` in `package.json` and format code files only
+(`ts`, `tsx`, `js`, `mjs`, `cjs`). A repository whose ecosystem prescribes its own
+formatting keeps it (the n8n node uses n8n's settings).
+
 ## What it enforces
 
 The base is `@eslint/js` recommended plus `typescript-eslint`'s `strictTypeChecked` and
