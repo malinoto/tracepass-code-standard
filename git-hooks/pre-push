@@ -1,0 +1,37 @@
+#!/bin/sh
+# tracepass-code-standard pre-push hook (installed by git-hooks/install.mjs).
+#
+# Owner rule: the full check runs before anything lands on the default branch. A push
+# to any other branch runs nothing. A push to the default branch runs `npm run check`
+# in this checkout, so it refuses when the checkout differs from what is pushed:
+# uncommitted changes, or a pushed commit other than HEAD.
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+default=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)
+if [ -z "$default" ]; then
+  if git show-ref --quiet --verify refs/remotes/origin/main; then default=main; else default=master; fi
+fi
+
+zero=0000000000000000000000000000000000000000
+status=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$remote_ref" = "refs/heads/$default" ] || continue
+  [ "$local_sha" = "$zero" ] && continue # deleting a branch: nothing to check
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "✗ push to $default refused: the checkout has uncommitted changes, so npm run check would not test what is pushed"
+    status=1
+    continue
+  fi
+  if [ "$local_sha" != "$(git rev-parse HEAD)" ]; then
+    echo "✗ push to $default refused: it pushes $(git rev-parse --short "$local_sha") but HEAD is $(git rev-parse --short HEAD); check out the commit you push"
+    status=1
+    continue
+  fi
+  echo "Push to $default: running npm run check on $(git rev-parse --short HEAD)…"
+  if ! npm run check </dev/null; then status=1; fi
+done
+if [ "$status" -ne 0 ]; then
+  echo "✗ push to $default blocked"
+  exit 1
+fi

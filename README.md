@@ -33,6 +33,21 @@ export default [
 }
 ```
 
+### The pre-push check
+
+Every repo defines `npm run check` (lint, format check, type check, tests) and installs the
+shared pre-push hook from its `prepare` script:
+
+```json
+"prepare": "if [ -f node_modules/@tracepass/code-standard/git-hooks/install.mjs ]; then node node_modules/@tracepass/code-standard/git-hooks/install.mjs; fi"
+```
+
+The hook runs `npm run check` when a push targets the default branch and nothing for any
+other branch. It refuses a push from a checkout with uncommitted changes, or of a commit
+other than `HEAD`, because the check would not be testing what is pushed. It leaves a
+`pre-push` hook it did not write alone. The guard in `prepare` keeps an install without
+dev dependencies (a production image) from failing.
+
 ### Before a repo has adopted it
 
 Lint new or changed files of a sibling checkout with this standard, from that repo's root:

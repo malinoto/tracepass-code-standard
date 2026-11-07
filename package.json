@@ -24,6 +24,7 @@
   },
   "files": [
     "typescript",
+    "git-hooks",
     "README.md",
     "LICENSE"
   ],
