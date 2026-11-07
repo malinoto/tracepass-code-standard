@@ -45,6 +45,9 @@ On top of `@eslint/js` recommended and `typescript-eslint` recommended:
 | `no-empty` (empty `catch` included) | An empty block hides a failure; a deliberate one says why in a comment |
 | `no-alert` | No browser `alert`/`confirm`/`prompt` |
 
+A `.cjs` file is CommonJS by definition, so there (and only there) `require`, `module`,
+`exports`, `__dirname` and `__filename` are allowed.
+
 TypeScript: `strict`, `forceConsistentCasingInFileNames`, `skipLibCheck`.
 
 The tests prove each rule fires on a planted violation and that clean code passes.
