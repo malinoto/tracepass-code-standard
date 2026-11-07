@@ -53,8 +53,16 @@ On top of that base:
 | `@typescript-eslint/explicit-module-boundary-types` | An exported function or method states its parameter and return types: its contract is written down, not inferred (TypeScript only: plain JavaScript states them in JSDoc) |
 | `@typescript-eslint/explicit-member-accessibility` | Strict OOP: every class member says `public`, `private` or `protected` |
 | `@typescript-eslint/prefer-readonly` | A private field never reassigned after construction is `readonly` |
-| `@typescript-eslint/member-ordering` | Class members appear in one fixed order (fields, constructors, methods) |
 | `eslint-plugin-jsdoc` (recommended, errors) + `require-jsdoc` on exports | Every exported function, method, class, interface, type alias and enum has a JSDoc with a description, every parameter and the return value. In `.ts` files the JSDoc carries no types (the signature does, and a second copy would drift unchecked); in `.js`/`.mjs`/`.cjs` files it carries them (they are the only types, and TypeScript checks them) |
+
+**Deliberately not enforced** (reason next to each in the source):
+- `array-type`, `dot-notation`, `consistent-type-definitions`: they only choose between two
+  equivalent spellings and catch no bug.
+- A fixed class member order: catches no bug and cannot be autofixed.
+- In framework files (React `.tsx` components; Next.js `route.ts`, `sitemap`/`robots`/
+  `manifest`, `middleware`/`proxy`/`instrumentation`): no required JSDoc and no explicit
+  return type. The framework fixes their shape and their names say what they are. The
+  JSDoc correctness rules still apply when a JSDoc is written.
 
 A `.cjs` file is CommonJS by definition, so there (and only there) `require`, `module`,
 `exports`, `__dirname` and `__filename` are allowed.

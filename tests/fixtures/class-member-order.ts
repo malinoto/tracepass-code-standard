@@ -1,4 +1,4 @@
-// A field declared after the methods: the one thing wrong here.
+// A field declared after the methods: allowed (member order is not enforced).
 /** An article's lifecycle stage. */
 export type ArticleStatus = "active" | "discontinued";
 

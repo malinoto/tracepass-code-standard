@@ -8,10 +8,16 @@
     "types": [
       "node"
     ],
-    "allowJs": true
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "lib": [
+      "es2022",
+      "dom"
+    ]
   },
   "include": [
     "tests/**/*.ts",
+    "tests/**/*.tsx",
     "typescript/**/*.mjs"
   ]
 }

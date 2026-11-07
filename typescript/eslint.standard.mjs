@@ -34,11 +34,22 @@ export const standardRules = {
   // Owner rule: an exported function or method states its parameter and return types,
   // so its contract is written down rather than inferred from the body.
   "@typescript-eslint/explicit-module-boundary-types": "error",
-  // Owner decision: strict OOP. Every class member states its accessibility, a field never
-  // reassigned after construction is readonly, and members appear in one fixed order.
+  // Owner decision: strict OOP. Every class member states its accessibility, and a field
+  // never reassigned after construction is readonly. (A fixed member order was tried and
+  // dropped: it catches no bug and cannot be autofixed.)
   "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
   "@typescript-eslint/prefer-readonly": "error",
-  "@typescript-eslint/member-ordering": "error",
+};
+
+/**
+ * Rules from the base switched OFF, each with its reason (owner decision). Stylistic rules
+ * that only choose between two equivalent spellings catch no bug. (prefer-nullish-coalescing
+ * stays on: `count || 10` turning a real 0 into 10 is a bug.)
+ */
+export const relaxedRules = {
+  "@typescript-eslint/array-type": "off", // T[] vs Array<T>: equivalent
+  "@typescript-eslint/dot-notation": "off", // obj.key vs obj["key"]: equivalent
+  "@typescript-eslint/consistent-type-definitions": "off", // interface vs type: equivalent here
 };
 
 /** Node and web globals our code uses, for plain .js/.mjs files (TS files need none). */
@@ -129,17 +140,41 @@ const jsdocJs = {
   rules: { ...jsdoc.configs["flat/recommended-error"].rules, ...exportedNeedJsdoc },
 };
 
+/**
+ * Framework files (owner decision): React components (.tsx) and Next.js route, page and
+ * metadata files. The framework fixes their shape and return types, and their names say
+ * what they are, so a required JSDoc or an explicit return type there repeats the name and
+ * adds nothing. The JSDoc correctness rules still apply when a JSDoc is written.
+ */
+export const frameworkFiles = [
+  "**/*.tsx",
+  "**/app/**/route.ts",
+  "**/app/**/{sitemap,robots,manifest}.ts",
+  "**/{middleware,proxy,instrumentation}.ts",
+];
+const frameworkRelief = {
+  files: frameworkFiles,
+  rules: {
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "jsdoc/require-jsdoc": "off",
+    "jsdoc/require-param": "off",
+    "jsdoc/require-returns": "off",
+    "jsdoc/require-description": "off",
+  },
+};
+
 export const standard = [
   { ignores: standardIgnores },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   typeAware,
-  { languageOptions: { globals: standardGlobals }, rules: standardRules },
+  { languageOptions: { globals: standardGlobals }, rules: { ...standardRules, ...relaxedRules } },
   plainJsFiles,
   commonJsFiles,
   jsdocTs,
   jsdocJs,
+  frameworkRelief,
 ];
 
 export default standard;

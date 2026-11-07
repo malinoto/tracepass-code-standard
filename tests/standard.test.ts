@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ESLint } from "eslint";
 import { describe, expect, it } from "vitest";
-import { standard, standardRules } from "../typescript/eslint.standard.mjs";
+import { relaxedRules, standard, standardRules } from "../typescript/eslint.standard.mjs";
 
 const fixture = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 
@@ -23,10 +23,17 @@ const CONTRACT = [
   "@typescript-eslint/explicit-module-boundary-types",
   "@typescript-eslint/explicit-member-accessibility",
   "@typescript-eslint/prefer-readonly",
-  "@typescript-eslint/member-ordering",
 ];
 
 describe("@tracepass/code-standard ESLint rules", () => {
+  it("switches off only the contracted equivalent-spelling rules", () => {
+    expect(Object.keys(relaxedRules).sort()).toEqual([
+      "@typescript-eslint/array-type",
+      "@typescript-eslint/consistent-type-definitions",
+      "@typescript-eslint/dot-notation",
+    ]);
+  });
+
   it("sets exactly the contracted rules", () => {
     expect(Object.keys(standardRules).sort()).toEqual([...CONTRACT].sort());
   });
@@ -37,7 +44,6 @@ describe("@tracepass/code-standard ESLint rules", () => {
       "inferred-return.ts",
       "class-implicit-access.ts",
       "class-not-readonly.ts",
-      "class-member-order.ts",
     ];
     const reported = (await Promise.all(fixtures.map(lint))).flat();
     for (const rule of CONTRACT) {
@@ -82,8 +88,25 @@ describe("@tracepass/code-standard ESLint rules", () => {
     expect(await lint("class-not-readonly.ts")).toEqual(["@typescript-eslint/prefer-readonly"]);
   });
 
-  it("requires class members in one fixed order", async () => {
-    expect(await lint("class-member-order.ts")).toEqual(["@typescript-eslint/member-ordering"]);
+  it("does not enforce a member order (dropped: no bug caught, no autofix)", async () => {
+    expect(await lint("class-member-order.ts")).toEqual([]);
+  });
+
+  it("leaves equivalent spellings alone: T[] vs Array<T>, obj.key vs obj[\"key\"], interface vs type", async () => {
+    expect(await lint("equivalent-spellings.ts")).toEqual([]);
+  });
+
+  it("does not require a JSDoc or a return type on a React component", async () => {
+    expect(await lint("Component.tsx")).toEqual([]);
+  });
+
+  it("does not require a JSDoc or a return type on a Next.js route handler", async () => {
+    expect(await lint("app/api/thing/route.ts")).toEqual([]);
+  });
+
+  it("still requires them on library code", async () => {
+    expect(await lint("missing-jsdoc.ts")).toEqual(["jsdoc/require-jsdoc"]);
+    expect(await lint("inferred-return.ts")).toEqual(["@typescript-eslint/explicit-module-boundary-types"]);
   });
 
   it("still forbids require in TypeScript", async () => {
