@@ -57,8 +57,12 @@ that language needs them. They are not part of the npm package.
 ## Releasing
 
 Push a `vX.Y.Z` tag matching `package.json`; `.github/workflows/publish.yml` publishes to
-npm with provenance through GitHub's OIDC trusted publishing. A change to the rules is a
-new version, and each repository moves to it like any other dependency.
+npm with provenance through GitHub's OIDC trusted publishing.
+
+Versioning: repositories depend on `^x.y.z`, so minor and patch releases arrive through
+`npm update`. **A new or tightened rule, or anything that can fail existing code, is a
+major release**, taken per repository with `npm install @tracepass/code-standard@<major>`.
+Minor: a loosened ignore or a new optional export. Patch: comments and documentation.
 
 ## Licence
 
