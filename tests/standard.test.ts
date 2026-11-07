@@ -42,6 +42,10 @@ describe("@tracepass/code-standard ESLint rules", () => {
     expect(await lint("commonjs.cjs")).toEqual([]);
   });
 
+  it("includes the type-aware rules: a forgotten await is reported", async () => {
+    expect(await lint("violations.ts")).toContain("@typescript-eslint/no-floating-promises");
+  });
+
   it("still forbids require in TypeScript", async () => {
     expect(await lint("violations.ts")).toContain("@typescript-eslint/no-require-imports");
   });

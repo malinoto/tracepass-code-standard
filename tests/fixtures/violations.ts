@@ -10,3 +10,9 @@ export function load(input: any): string {
   alert("failed");
   return "";
 }
+
+async function save(): Promise<void> {}
+
+export function persist(): void {
+  save(); // forgotten await: a failure here would vanish
+}

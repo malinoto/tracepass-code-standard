@@ -1,0 +1,5 @@
+{
+  "extends": "./typescript/tsconfig.standard.json",
+  "compilerOptions": { "module": "nodenext", "moduleResolution": "nodenext", "target": "es2022", "noEmit": true, "types": ["node"] },
+  "include": ["tests/**/*.ts"]
+}

@@ -62,11 +62,26 @@ const commonJsFiles = {
   },
 };
 
+/**
+ * The base (owner decision): ESLint recommended + typescript-eslint strict and stylistic,
+ * both type-aware. Strict includes recommended and adds the rules that need the type
+ * checker (forgotten awaits, misused promises, impossible conditions, `any` flowing into
+ * typed code…); stylistic adds consistency. `projectService` finds each file's tsconfig on
+ * its own. Plain .js / .mjs / .cjs files have no TypeScript types, so the type-aware rules
+ * are switched off for them only. Each rule is then reviewed; any rule this standard
+ * configures or switches off says why, next to it.
+ */
+const typeAware = { languageOptions: { parserOptions: { projectService: true } } };
+const plainJsFiles = { ...tseslint.configs.disableTypeChecked, files: ["**/*.js", "**/*.mjs", "**/*.cjs"] };
+
 export const standard = [
   { ignores: standardIgnores },
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+  typeAware,
   { languageOptions: { globals: standardGlobals }, rules: standardRules },
+  plainJsFiles,
   commonJsFiles,
 ];
 

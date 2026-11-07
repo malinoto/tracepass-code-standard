@@ -35,7 +35,13 @@ export default [
 
 ## What it enforces
 
-On top of `@eslint/js` recommended and `typescript-eslint` recommended:
+The base is `@eslint/js` recommended plus `typescript-eslint`'s `strictTypeChecked` and
+`stylisticTypeChecked`, applied as shipped (type-aware rules use each repository's own
+`tsconfig`; plain `.js` / `.mjs` / `.cjs` files skip them). The rules evolve from real
+cases: when code shows a rule getting in the way or missing something, the change is
+decided and made here, with its reason next to the rule.
+
+On top of that base:
 
 | Rule | Why |
 |---|---|

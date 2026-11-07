@@ -10,13 +10,22 @@
     "type": "git",
     "url": "git+https://github.com/malinoto/tracepass-code-standard.git"
   },
-  "keywords": ["eslint-config", "tsconfig", "typescript", "coding-standard"],
+  "keywords": [
+    "eslint-config",
+    "tsconfig",
+    "typescript",
+    "coding-standard"
+  ],
   "exports": {
     "./eslint": "./typescript/eslint.standard.mjs",
     "./tsconfig.json": "./typescript/tsconfig.standard.json",
     "./package.json": "./package.json"
   },
-  "files": ["typescript", "README.md", "LICENSE"],
+  "files": [
+    "typescript",
+    "README.md",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public",
     "provenance": true
@@ -28,10 +37,12 @@
   "peerDependencies": {
     "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0",
+    "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@types/node": "^26.6.6",
     "eslint": "^9.39.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.1",
