@@ -8,6 +8,7 @@
 // Peer dependencies of the consuming repo: eslint, @eslint/js, typescript-eslint.
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
+import jsdoc from "eslint-plugin-jsdoc";
 
 /** Paths no repo lints: dependencies and build output. */
 export const standardIgnores = ["**/node_modules/**", "**/dist/**", "**/coverage/**"];
@@ -75,7 +76,53 @@ const commonJsFiles = {
  * configures or switches off says why, next to it.
  */
 const typeAware = { languageOptions: { parserOptions: { projectService: true } } };
-const plainJsFiles = { ...tseslint.configs.disableTypeChecked, files: ["**/*.js", "**/*.mjs", "**/*.cjs"] };
+const plainJsFiles = {
+  ...tseslint.configs.disableTypeChecked,
+  files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+  rules: {
+    ...tseslint.configs.disableTypeChecked.rules,
+    // Plain JavaScript has no annotation syntax: its explicit types are the JSDoc types,
+    // which the JSDoc rules below require for every export.
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+  },
+};
+
+/**
+ * JSDoc (owner decision): every EXPORTED function, method, class, interface, type alias
+ * and enum carries a JSDoc with a description, every parameter and the return value.
+ * Types inside JSDoc only in plain .js/.mjs/.cjs files, where TypeScript checks them; in
+ * .ts files the types live in the signature (a second copy would drift unchecked) and the
+ * JSDoc holds the meaning.
+ */
+const exportedNeedJsdoc = {
+  "jsdoc/require-jsdoc": [
+    "error",
+    {
+      publicOnly: true,
+      require: {
+        FunctionDeclaration: true,
+        MethodDefinition: true,
+        ClassDeclaration: true,
+        ArrowFunctionExpression: true,
+        FunctionExpression: true,
+      },
+      contexts: ["TSInterfaceDeclaration", "TSTypeAliasDeclaration", "TSEnumDeclaration"],
+    },
+  ],
+  "jsdoc/require-description": "error",
+  "jsdoc/require-param-description": "error",
+  "jsdoc/require-returns-description": "error",
+};
+const jsdocTs = {
+  ...jsdoc.configs["flat/recommended-typescript-error"],
+  files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts"],
+  rules: { ...jsdoc.configs["flat/recommended-typescript-error"].rules, ...exportedNeedJsdoc },
+};
+const jsdocJs = {
+  ...jsdoc.configs["flat/recommended-error"],
+  files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+  rules: { ...jsdoc.configs["flat/recommended-error"].rules, ...exportedNeedJsdoc },
+};
 
 export const standard = [
   { ignores: standardIgnores },
@@ -86,6 +133,8 @@ export const standard = [
   { languageOptions: { globals: standardGlobals }, rules: standardRules },
   plainJsFiles,
   commonJsFiles,
+  jsdocTs,
+  jsdocJs,
 ];
 
 export default standard;

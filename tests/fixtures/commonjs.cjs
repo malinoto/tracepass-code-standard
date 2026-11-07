@@ -2,4 +2,13 @@
 const path = require("node:path");
 const crypto = require("node:crypto");
 
-module.exports = { here: path.join(__dirname, "x"), id: crypto.randomUUID() };
+/**
+ * Builds a unique path under this folder.
+ * @param {string} name - File name to place under this folder.
+ * @returns {string} The absolute path with a random suffix.
+ */
+function here(name) {
+  return path.join(__dirname, `${name}-${crypto.randomUUID()}`);
+}
+
+module.exports = { here };

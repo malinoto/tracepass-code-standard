@@ -50,7 +50,8 @@ On top of that base:
 | `@typescript-eslint/no-require-imports` | ES modules only |
 | `no-empty` (empty `catch` included) | An empty block hides a failure; a deliberate one says why in a comment |
 | `no-alert` | No browser `alert`/`confirm`/`prompt` |
-| `@typescript-eslint/explicit-module-boundary-types` | An exported function or method states its parameter and return types: its contract is written down, not inferred |
+| `@typescript-eslint/explicit-module-boundary-types` | An exported function or method states its parameter and return types: its contract is written down, not inferred (TypeScript only: plain JavaScript states them in JSDoc) |
+| `eslint-plugin-jsdoc` (recommended, errors) + `require-jsdoc` on exports | Every exported function, method, class, interface, type alias and enum has a JSDoc with a description, every parameter and the return value. In `.ts` files the JSDoc carries no types (the signature does, and a second copy would drift unchecked); in `.js`/`.mjs`/`.cjs` files it carries them (they are the only types, and TypeScript checks them) |
 
 A `.cjs` file is CommonJS by definition, so there (and only there) `require`, `module`,
 `exports`, `__dirname` and `__filename` are allowed.

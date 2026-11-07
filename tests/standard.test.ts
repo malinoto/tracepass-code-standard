@@ -51,6 +51,18 @@ describe("@tracepass/code-standard ESLint rules", () => {
     expect(await lint("inferred-return.ts")).toEqual(["@typescript-eslint/explicit-module-boundary-types"]);
   });
 
+  it("requires a JSDoc on every exported function", async () => {
+    expect(await lint("missing-jsdoc.ts")).toEqual(["jsdoc/require-jsdoc"]);
+  });
+
+  it("keeps types out of JSDoc in TypeScript (the signature holds them)", async () => {
+    expect(await lint("jsdoc-types-in-ts.ts")).toEqual(["jsdoc/no-types"]);
+  });
+
+  it("requires types in JSDoc in plain JavaScript (they are its only types)", async () => {
+    expect(await lint("jsdoc-untyped.mjs")).toEqual(["jsdoc/require-param-type"]);
+  });
+
   it("still forbids require in TypeScript", async () => {
     expect(await lint("violations.ts")).toContain("@typescript-eslint/no-require-imports");
   });
@@ -66,7 +78,7 @@ describe("@tracepass/code-standard ESLint rules", () => {
 describe("@tracepass/code-standard TypeScript settings", () => {
   it("keeps strict mode on", () => {
     const raw = readFileSync(new URL("../typescript/tsconfig.standard.json", import.meta.url), "utf8");
-    const json = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, ""));
-    expect(json.compilerOptions.strict).toBe(true);
+    const json: unknown = JSON.parse(raw.replace(/^\s*\/\/.*$/gm, ""));
+    expect(json).toMatchObject({ compilerOptions: { strict: true } });
   });
 });
