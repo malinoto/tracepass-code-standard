@@ -153,7 +153,9 @@ const exportedNeedJsdoc = {
       contexts: ["TSInterfaceDeclaration", "TSTypeAliasDeclaration", "TSEnumDeclaration"],
     },
   ],
-  "jsdoc/require-description": "error",
+  // Every JSDoc block says what the thing is, wherever it sits: without `any`, the rule
+  // checks functions only, and an empty `/** */` on an interface or type passed (owner decision).
+  "jsdoc/require-description": ["error", { contexts: ["any"] }],
   "jsdoc/require-param-description": "error",
   "jsdoc/require-returns-description": "error",
 };

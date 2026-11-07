@@ -106,6 +106,13 @@ describe("@tracepass/code-standard ESLint rules", () => {
     expect(await lint("equivalent-spellings.ts")).toEqual([]);
   });
 
+  it("reports an empty JSDoc block on an interface or a type, not only on functions", async () => {
+    expect(await lint("empty-jsdoc-on-type.ts")).toEqual([
+      "jsdoc/require-description",
+      "jsdoc/require-description",
+    ]);
+  });
+
   it("does not push a cast toward `!`, which no-non-null-assertion forbids", async () => {
     expect(await lint("non-null-cast.ts")).toEqual([]);
   });

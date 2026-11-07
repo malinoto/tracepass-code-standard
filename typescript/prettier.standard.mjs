@@ -9,7 +9,10 @@
 // indent, which the code already uses; a line width of 100 rewraps far fewer lines than
 // Prettier's default 80.
 
-/** @type {import("prettier").Config} */
+/**
+ * The shared Prettier settings.
+ * @type {import("prettier").Config}
+ */
 const config = {
   printWidth: 100,
   tabWidth: 2,
