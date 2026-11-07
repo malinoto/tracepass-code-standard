@@ -125,3 +125,15 @@ describe("install.mjs", () => {
     expect(existsSync(join(plain, ".git"))).toBe(false);
   });
 });
+
+describe("pre-push hook in a repo that has not adopted the standard", () => {
+  it("lets the push through with a notice when the commit defines no check script", () => {
+    writeFileSync(join(work, "package.json"), JSON.stringify({ name: "x", private: true }));
+    setCheck(false);
+    git(work, "add", "package.json");
+    git(work, "commit", "-q", "-m", "no check script");
+    const r = push("origin", "main");
+    expect(r.ok).toBe(true);
+    expect(r.output).toContain("defines no npm run check");
+  });
+});

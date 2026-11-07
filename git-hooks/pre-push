@@ -28,6 +28,10 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     status=1
     continue
   fi
+  if ! node -e 'process.exit(require("./package.json").scripts?.check ? 0 : 1)' 2>/dev/null; then
+    echo "! push to $default: this commit defines no npm run check (the standard is not adopted here yet); nothing to run"
+    continue
+  fi
   echo "Push to $default: running npm run check on $(git rev-parse --short HEAD)…"
   if ! npm run check </dev/null; then status=1; fi
 done
