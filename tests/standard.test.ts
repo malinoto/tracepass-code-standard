@@ -25,6 +25,7 @@ const CONTRACT = [
   "@typescript-eslint/explicit-module-boundary-types",
   "@typescript-eslint/explicit-member-accessibility",
   "@typescript-eslint/prefer-readonly",
+  "no-restricted-syntax",
 ];
 
 describe("@tracepass/code-standard ESLint rules", () => {
@@ -46,6 +47,7 @@ describe("@tracepass/code-standard ESLint rules", () => {
       "inferred-return.ts",
       "class-implicit-access.ts",
       "class-not-readonly.ts",
+      "enum.ts",
     ];
     const reported = (await Promise.all(fixtures.map(lint))).flat();
     for (const rule of CONTRACT) {
@@ -115,6 +117,10 @@ describe("@tracepass/code-standard ESLint rules", () => {
     expect(await lint("inferred-return.ts")).toEqual([
       "@typescript-eslint/explicit-module-boundary-types",
     ]);
+  });
+
+  it("refuses a TypeScript enum (use a list of allowed values)", async () => {
+    expect(await lint("enum.ts")).toEqual(["no-restricted-syntax"]);
   });
 
   it("still forbids require in TypeScript", async () => {

@@ -61,6 +61,7 @@ On top of that base:
 | `@typescript-eslint/explicit-module-boundary-types` | An exported function or method states its parameter and return types: its contract is written down, not inferred (TypeScript only: plain JavaScript states them in JSDoc) |
 | `@typescript-eslint/explicit-member-accessibility` | Strict OOP: every class member says `public`, `private` or `protected` |
 | `@typescript-eslint/prefer-readonly` | A private field never reassigned after construction is `readonly` |
+| `no-restricted-syntax` (TS enums) | A fixed set of options is a list of allowed values (`as const`) and its union type, never an `enum`: one plain value in the database, the API and the code |
 | `eslint-plugin-jsdoc` (recommended, errors) + `require-jsdoc` on exports | Every exported function, method, class, interface, type alias and enum has a JSDoc with a description, every parameter and the return value. In `.ts` files the JSDoc carries no types (the signature does, and a second copy would drift unchecked); in `.js`/`.mjs`/`.cjs` files it carries them (they are the only types, and TypeScript checks them) |
 
 **Deliberately not enforced** (reason next to each in the source):

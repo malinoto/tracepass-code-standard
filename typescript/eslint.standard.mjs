@@ -39,6 +39,16 @@ export const standardRules = {
   // dropped: it catches no bug and cannot be autofixed.)
   "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
   "@typescript-eslint/prefer-readonly": "error",
+  // Owner decision: a fixed set of options is a list of allowed values (`as const`) and the
+  // union type derived from it, never a TypeScript enum: the value is the same plain string
+  // in the database, the API and the code, and the same list feeds the input schema.
+  "no-restricted-syntax": [
+    "error",
+    {
+      selector: "TSEnumDeclaration",
+      message: "Use a list of allowed values (`as const`) and its union type, not an enum.",
+    },
+  ],
 };
 
 /**
