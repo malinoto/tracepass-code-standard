@@ -10,7 +10,9 @@
 #   2. Trusted Publishers → Add a publisher → GitHub Actions.
 #   3. Organization or user: malinoto · Repository: tracepass-code-standard ·
 #      Workflow filename: publish.yml · Environment: (blank)
-#   4. Allow npm publish, save. The repo must be PUBLIC for provenance.
+#   4. Allowed actions: tick "publish directly" ("stage publish" alone is refused with
+#      E403 "OIDC permission denied for this action"); leave dist-tags off. Save.
+#      The repo must be PUBLIC for provenance.
 #
 # ─── RELEASE FLOW ──────────────────────────────────────────────────────────────
 #
