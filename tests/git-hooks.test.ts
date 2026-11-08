@@ -5,11 +5,21 @@
  */
 import { describe, it, expect, beforeEach } from "vitest";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync, chmodSync, existsSync } from "node:fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  copyFileSync,
+  rmSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const INSTALL = join(__dirname, "..", "git-hooks", "install.mjs");
+const GUARD = join(__dirname, "..", "git-hooks", "check-installed-deps.mjs");
 const ENV = {
   ...process.env,
   GIT_AUTHOR_NAME: "Test",
@@ -59,6 +69,11 @@ beforeEach(() => {
     'import { readFileSync } from "node:fs";\nprocess.exit(readFileSync("check-result", "utf8") === "pass" ? 0 : 1);\n',
   );
   writeFileSync(join(work, "check-result"), "pass");
+  // node_modules as a consumer has it: the standard installed, kept out of git.
+  writeFileSync(join(work, ".gitignore"), "node_modules/\n");
+  const installedGuard = join(work, "node_modules", "@tracepass", "code-standard", "git-hooks");
+  mkdirSync(installedGuard, { recursive: true });
+  copyFileSync(GUARD, join(installedGuard, "check-installed-deps.mjs"));
   git(work, "checkout", "-q", "-b", "main");
   git(work, "add", ".");
   git(work, "commit", "-q", "-m", "init");
@@ -103,6 +118,60 @@ describe("pre-push hook", () => {
     const r = push("origin", `${first}:refs/heads/main`);
     expect(r.ok).toBe(false);
     expect(r.output).toContain("check out the commit you push");
+  });
+});
+
+describe("pre-push hook and the installed packages", () => {
+  /**
+   * Commits a lockfile naming left-pad 1.3.0, and puts the given version in node_modules.
+   * @param installed The version node_modules holds.
+   */
+  function lockAndInstall(installed: string): void {
+    writeFileSync(
+      join(work, "package.json"),
+      JSON.stringify({
+        name: "x",
+        private: true,
+        scripts: { check: "node check.mjs" },
+        dependencies: { "left-pad": "^1.3.0" },
+      }),
+    );
+    writeFileSync(
+      join(work, "package-lock.json"),
+      JSON.stringify({ packages: { "node_modules/left-pad": { version: "1.3.0" } } }),
+    );
+    mkdirSync(join(work, "node_modules", "left-pad"), { recursive: true });
+    writeFileSync(
+      join(work, "node_modules", "left-pad", "package.json"),
+      JSON.stringify({ name: "left-pad", version: installed }),
+    );
+    git(work, "add", "package.json", "package-lock.json");
+    git(work, "commit", "-q", "-m", "a dependency");
+  }
+
+  it("refuses when node_modules holds another version than the lockfile names", () => {
+    const before = remoteHead("main");
+    lockAndInstall("1.2.0");
+    const r = push("origin", "main");
+    expect(r.ok).toBe(false);
+    expect(r.output).toContain("left-pad: lockfile 1.3.0, installed 1.2.0");
+    expect(r.output).toContain("would test other packages than the lockfile names");
+    expect(remoteHead("main")).toBe(before);
+  });
+
+  it("lets the push through when node_modules matches the lockfile", () => {
+    lockAndInstall("1.3.0");
+    const r = push("origin", "main");
+    expect(r.ok).toBe(true);
+    expect(r.output).toContain("node_modules matches package-lock.json");
+  });
+
+  it("refuses when node_modules has no @tracepass/code-standard at all", () => {
+    rmSync(join(work, "node_modules"), { recursive: true });
+    git(work, "commit", "-q", "--allow-empty", "-m", "more");
+    const r = push("origin", "main");
+    expect(r.ok).toBe(false);
+    expect(r.output).toContain("run npm install");
   });
 });
 

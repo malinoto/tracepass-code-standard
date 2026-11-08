@@ -32,6 +32,19 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     echo "! push to $default: this commit defines no npm run check (the standard is not adopted here yet); nothing to run"
     continue
   fi
+  # A check against packages that differ from the lockfile proves nothing.
+  guard=node_modules/@tracepass/code-standard/git-hooks/check-installed-deps.mjs
+  [ -f "$guard" ] || guard=git-hooks/check-installed-deps.mjs # this package's own repo
+  if [ ! -f "$guard" ]; then
+    echo "✗ push to $default refused: node_modules has no @tracepass/code-standard; run npm install"
+    status=1
+    continue
+  fi
+  if ! node "$guard"; then
+    echo "✗ push to $default refused: npm run check would test other packages than the lockfile names"
+    status=1
+    continue
+  fi
   echo "Push to $default: running npm run check on $(git rev-parse --short HEAD)…"
   if ! npm run check </dev/null; then status=1; fi
 done

@@ -44,7 +44,11 @@ shared pre-push hook from its `prepare` script:
 
 The hook runs `npm run check` when a push targets the default branch and nothing for any
 other branch. It refuses a push from a checkout with uncommitted changes, or of a commit
-other than `HEAD`, because the check would not be testing what is pushed. It leaves a
+other than `HEAD`, because the check would not be testing what is pushed. For the same
+reason it refuses when `node_modules` holds a direct dependency at another version than
+`package-lock.json` names (after a branch bumps a dependency and the checkout has not run
+`npm install`): `git-hooks/check-installed-deps.mjs`, which a repo with its own check
+script can also run (`node node_modules/@tracepass/code-standard/git-hooks/check-installed-deps.mjs [dir]`). It leaves a
 `pre-push` hook it did not write alone. The guard in `prepare` keeps an install without
 dev dependencies (a production image) from failing.
 
