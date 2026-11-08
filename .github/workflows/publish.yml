@@ -46,9 +46,22 @@ jobs:
         # Trusted publishing via OIDC needs npm CLI >= 11.5.1.
         run: npm install --global npm@latest
       - run: npm ci
-      - run: npm test
-      - run: npm run lint
+      # Lint, Prettier, the type check and the tests, as before any merge to main.
+      - run: npm run check
+      - name: Skip a version that is already on npm
+        # The first version is published by hand (see above), so its tag must not fail
+        # here; a re-run of a released tag is skipped the same way.
+        id: published
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if npm view "@tracepass/code-standard@$v" version >/dev/null 2>&1; then
+            echo "$v is already on npm; nothing to publish"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish to npm
+        if: steps.published.outputs.exists != 'true'
         # No NODE_AUTH_TOKEN: an empty token makes npm reject with ENEEDAUTH before
         # it tries OIDC. Provenance comes from publishConfig.provenance in package.json.
         run: npm publish

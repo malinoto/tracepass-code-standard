@@ -18,5 +18,5 @@ jobs:
         with:
           node-version: 'lts/*'
       - run: npm ci
-      - run: npm test
-      - run: npm run lint
+      # Lint, Prettier, the type check and the tests: the same as the pre-push hook.
+      - run: npm run check
