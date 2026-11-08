@@ -132,6 +132,14 @@ describe("@tracepass/code-standard ESLint rules", () => {
     ]);
   });
 
+  it("refuses console in service and library code under src/", async () => {
+    expect(await lint("src/logs-to-console.ts")).toEqual(["no-console"]);
+  });
+
+  it("lets a script outside src/ print for the person running it", async () => {
+    expect(await lint("prints-to-console.ts")).toEqual([]);
+  });
+
   it("refuses a TypeScript enum (use a list of allowed values)", async () => {
     expect(await lint("enum.ts")).toEqual(["no-restricted-syntax"]);
   });

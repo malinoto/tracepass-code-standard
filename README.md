@@ -88,6 +88,7 @@ On top of that base:
 | `@typescript-eslint/explicit-member-accessibility` | Strict OOP: every class member says `public`, `private` or `protected` |
 | `@typescript-eslint/prefer-readonly` | A private field never reassigned after construction is `readonly` |
 | `no-restricted-syntax` (TS enums) | A fixed set of options is a list of allowed values (`as const`) and its union type, never an `enum`: one plain value in the database, the API and the code |
+| `no-console` under `src/` | Service and library code logs through its service's logger (structured JSON, secrets and personal data blanked), never `console`. Scripts outside `src/` print plain text for a person. The logger's own module is the one file that may use the console; a repo switches the rule off for that file in its own config |
 | `eslint-plugin-jsdoc` (recommended, errors) + `require-jsdoc` on exports | Every exported function, method, class, interface, type alias and enum has a JSDoc with a description, every parameter and the return value. In `.ts` files the JSDoc carries no types (the signature does, and a second copy would drift unchecked); in `.js`/`.mjs`/`.cjs` files it carries them (they are the only types, and TypeScript checks them) |
 
 **Deliberately not enforced** (reason next to each in the source):

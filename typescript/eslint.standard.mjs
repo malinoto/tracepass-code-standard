@@ -194,6 +194,16 @@ const frameworkRelief = {
 };
 
 /**
+ * Logging (owner decision): service and library code under `src/` never calls `console`.
+ * It logs through its service's logger, which writes structured JSON and blanks secrets
+ * and personal data, so a careless call cannot leak them. Command-line and build scripts
+ * live outside `src/` and keep printing plain text for a person. The logger's own module
+ * is the one file that may touch the console; a repo names it in its own config.
+ */
+export const sourceFiles = ["**/src/**/*.{ts,tsx,mts,cts,js,mjs,cjs}"];
+const noConsoleInSource = { files: sourceFiles, rules: { "no-console": "error" } };
+
+/**
  * The full standard as a flat config: spread it first in a repo's eslint.config.
  * @type {import("eslint").Linter.Config[]}
  */
@@ -209,6 +219,7 @@ export const standard = [
   jsdocTs,
   jsdocJs,
   frameworkRelief,
+  noConsoleInSource,
 ];
 
 export default standard;

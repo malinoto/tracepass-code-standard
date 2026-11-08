@@ -1,6 +1,6 @@
 {
   "name": "@tracepass/code-standard",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "TracePass's shared coding standard: the ESLint rules and TypeScript compiler settings every TracePass TypeScript repository uses.",
   "type": "module",
   "license": "Apache-2.0",
