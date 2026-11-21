@@ -1,15 +1,27 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { ESLint } from "eslint";
+import { ESLint, type Linter } from "eslint";
 import { format } from "prettier";
 import prettierConfig from "../typescript/prettier.standard.mjs";
 import { describe, expect, it } from "vitest";
-import { relaxedRules, standard, standardRules } from "../typescript/eslint.standard.mjs";
+import {
+  relaxedRules,
+  restrictedSyntaxExceptClientIp,
+  standard,
+  standardRules,
+} from "../typescript/eslint.standard.mjs";
 
 const fixture = (name: string) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 
 async function lint(name: string) {
   const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: standard });
+  const [result] = await eslint.lintFiles([fixture(name)]);
+  if (!result) throw new Error(`ESLint returned no result for ${name}`);
+  return result.messages.map((m) => m.ruleId);
+}
+
+async function lintWith(name: string, extra: Linter.Config[]) {
+  const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: [...standard, ...extra] });
   const [result] = await eslint.lintFiles([fixture(name)]);
   if (!result) throw new Error(`ESLint returned no result for ${name}`);
   return result.messages.map((m) => m.ruleId);
@@ -153,6 +165,64 @@ describe("@tracepass/code-standard ESLint rules", () => {
       const level = Array.isArray(setting) ? setting[0] : setting;
       expect(level, rule).toBe("error");
     }
+  });
+});
+
+describe("@tracepass/code-standard default ignores", () => {
+  it("does not lint Claude Code session worktrees (full copies of the repo)", async () => {
+    const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: standard });
+    const file = fixture(".claude/worktrees/session-1/copy.ts");
+    expect(await eslint.isPathIgnored(file)).toBe(true);
+    const results = await eslint.lintFiles([file]);
+    // Naming an ignored file gives only ESLint's own "File ignored" warning, no rule finding.
+    expect(results.flatMap((r) => r.messages.map((m) => m.ruleId))).toEqual([null]);
+  });
+});
+
+describe("@tracepass/code-standard autofix", () => {
+  async function fixed(name: string) {
+    const eslint = new ESLint({ overrideConfigFile: true, overrideConfig: standard, fix: true });
+    const [result] = await eslint.lintFiles([fixture(name)]);
+    if (!result) throw new Error(`ESLint returned no result for ${name}`);
+    return result;
+  }
+
+  it("never writes an empty JSDoc block that require-description then rejects", async () => {
+    const result = await fixed("fixer-exported-interface.ts");
+    expect(result.output ?? "").not.toMatch(/\/\*\*\s*\*\s*\*\//);
+    const ids = result.messages.map((m) => m.ruleId);
+    expect(ids).not.toContain("jsdoc/require-description");
+    // The missing JSDoc on the exported interface is still reported, for a person to write.
+    expect(ids).toEqual(["jsdoc/require-jsdoc"]);
+  });
+
+  it("keeps the text when it re-wraps a block comment (multiline-blocks)", async () => {
+    const result = await fixed("fixer-exported-interface.ts");
+    expect(result.output).toContain("Wrapped description that");
+    expect(result.output).toContain("ends here.");
+  });
+});
+
+describe("@tracepass/code-standard client IP header", () => {
+  it("refuses reading x-forwarded-for / x-real-ip ad hoc, in any case or quoting", async () => {
+    expect(await lint("client-ip-header.ts")).toEqual([
+      "no-restricted-syntax",
+      "no-restricted-syntax",
+      "no-restricted-syntax",
+      "no-restricted-syntax",
+    ]);
+  });
+
+  it("leaves other headers alone", async () => {
+    expect(await lint("client-ip-header-other.ts")).toEqual([]);
+  });
+
+  it("is exempted by a repo's override for its one rate-key helper file", async () => {
+    const exempt: Linter.Config = {
+      files: ["**/client-ip-header.ts"],
+      rules: { "no-restricted-syntax": restrictedSyntaxExceptClientIp },
+    };
+    expect(await lintWith("client-ip-header.ts", [exempt])).toEqual([]);
   });
 });
 
