@@ -92,6 +92,7 @@ On top of that base:
 | `@typescript-eslint/explicit-member-accessibility` | Strict OOP: every class member says `public`, `private` or `protected` |
 | `@typescript-eslint/prefer-readonly` | A private field never reassigned after construction is `readonly` |
 | `no-restricted-syntax` (TS enums) | A fixed set of options is a list of allowed values (`as const`) and its union type, never an `enum`: one plain value in the database, the API and the code |
+| `no-restricted-syntax` (client IP header) | The client address is read in one place, the repo's single rate-key helper (IPv4 address, IPv6 per /64): `headers.get("x-forwarded-for")` / `headers.get("x-real-ip")` (any letter case, string or template literal) and `req.headers["x-forwarded-for"]` are refused elsewhere. The helper's file is exempted by an override (below) |
 | `no-console` under `src/` | Service and library code logs through its service's logger (structured JSON, secrets and personal data blanked), never `console`. Scripts outside `src/` print plain text for a person. The logger's own module is the one file that may use the console; a repo switches the rule off for that file in its own config |
 | `eslint-plugin-jsdoc` (recommended, errors) + `require-jsdoc` on exports | Every exported function, method, class, interface, type alias and enum has a JSDoc with a description, every parameter and the return value. In `.ts` files the JSDoc carries no types (the signature does, and a second copy would drift unchecked); in `.js`/`.mjs`/`.cjs` files it carries them (they are the only types, and TypeScript checks them) |
 
@@ -103,6 +104,31 @@ On top of that base:
   `manifest`, `middleware`/`proxy`/`instrumentation`): no required JSDoc and no explicit
   return type. The framework fixes their shape and their names say what they are. The
   JSDoc correctness rules still apply when a JSDoc is written.
+
+**Exempting the rate-key helper.** The file that holds the repo's one rate-key helper
+overrides `no-restricted-syntax` with the standard's list minus the header reads (the enum
+ban stays), in its `eslint.config.mjs` after the standard:
+
+```js
+import { standard, restrictedSyntaxExceptClientIp } from "@tracepass/code-standard/eslint";
+
+export default [
+  ...standard,
+  {
+    files: ["src/lib/client-ip.ts"],
+    rules: { "no-restricted-syntax": restrictedSyntaxExceptClientIp },
+  },
+];
+```
+
+**Ignored by default:** `node_modules`, `dist`, `coverage` and `.claude/worktrees/` (Claude
+Code session worktrees are full copies of the repo; linting them ran `eslint .` out of
+memory). Each repo also lists `/.claude/worktrees/` in its `.gitignore`, which Prettier
+reads.
+
+**Autofix never invents a JSDoc.** `jsdoc/require-jsdoc` runs without its fixer: it would
+insert an empty `/** * */` that `jsdoc/require-description` rejects, so `eslint --fix` swapped
+one finding for another. The missing JSDoc is still reported and the author writes it.
 
 A `.cjs` file is CommonJS by definition, so there (and only there) `require`, `module`,
 `exports`, `__dirname` and `__filename` are allowed.
@@ -125,6 +151,14 @@ Versioning: repositories depend on `^x.y.z`, so minor and patch releases arrive 
 `npm update`. **A new or tightened rule, or anything that can fail existing code, is a
 major release**, taken per repository with `npm install @tracepass/code-standard@<major>`.
 Minor: a loosened ignore or a new optional export. Patch: comments and documentation.
+
+### Changes
+
+- **3.0.0** (major: the client-IP header rule can fail existing code). Reading
+  `x-forwarded-for` / `x-real-ip` outside the repo's rate-key helper is refused. Also
+  `.claude/worktrees/**` is ignored by default, and `jsdoc/require-jsdoc` no longer
+  autofixes (so `--fix` writes no empty JSDoc block). Each repo adds `/.claude/worktrees/`
+  to its `.gitignore` and exempts its helper file through the override above.
 
 ## Licence
 

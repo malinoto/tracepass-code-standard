@@ -10,8 +10,52 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import jsdoc from "eslint-plugin-jsdoc";
 
-/** Paths no repo lints: dependencies and build output. */
-export const standardIgnores = ["**/node_modules/**", "**/dist/**", "**/coverage/**"];
+/**
+ * Paths no repo lints: dependencies, build output, and Claude Code session worktrees
+ * (`.claude/worktrees/`: each is a full copy of the repo, so linting them multiplies the
+ * work until `eslint .` runs out of memory). A repo also lists `/.claude/worktrees/` in its
+ * `.gitignore`, which Prettier reads.
+ */
+export const standardIgnores = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/coverage/**",
+  "**/.claude/worktrees/**",
+];
+
+/** Header names that carry the client address, which only the repo's rate-key helper reads. */
+const clientIpHeader = "/^x-(forwarded-for|real-ip)$/i";
+
+/**
+ * The `no-restricted-syntax` entries after the severity: the enum ban and the client-IP
+ * header reads. Exported so a repo can exempt its ONE rate-key helper file without
+ * dropping the enum ban there (see `restrictedSyntaxExceptClientIp`).
+ */
+export const restrictedSyntaxEntries = [
+  {
+    selector: "TSEnumDeclaration",
+    message: "Use a list of allowed values (`as const`) and its union type, not an enum.",
+  },
+  ...[
+    // headers.get("x-forwarded-for"), also headers?.get(`x-real-ip`), any letter case
+    `CallExpression[callee.property.name="get"][arguments.0.value=${clientIpHeader}]`,
+    `CallExpression[callee.property.name="get"][arguments.0.expressions.length=0][arguments.0.quasis.0.value.cooked=${clientIpHeader}]`,
+    // req.headers["x-forwarded-for"] (a Node header object)
+    `MemberExpression[computed=true][property.value=${clientIpHeader}]`,
+  ].map((selector) => ({
+    selector,
+    message:
+      "Do not read the client address header ad hoc: use the repo's single rate-key helper (IPv4 address, IPv6 per /64). Only that helper's file is exempt, through an override.",
+  })),
+];
+
+/**
+ * The override for the repo's rate-key helper file: the standard's `no-restricted-syntax`
+ * without the client-IP header reads (the enum ban stays). Use it as
+ * `{ files: ["src/lib/client-ip.ts"], rules: { "no-restricted-syntax": restrictedSyntaxExceptClientIp } }`.
+ * @type {["error", ...object[]]}
+ */
+export const restrictedSyntaxExceptClientIp = ["error", restrictedSyntaxEntries[0]];
 
 /**
  * The rules this standard sets on top of the recommended sets. Exported so a test can
@@ -42,13 +86,9 @@ export const standardRules = {
   // Owner decision: a fixed set of options is a list of allowed values (`as const`) and the
   // union type derived from it, never a TypeScript enum: the value is the same plain string
   // in the database, the API and the code, and the same list feeds the input schema.
-  "no-restricted-syntax": [
-    "error",
-    {
-      selector: "TSEnumDeclaration",
-      message: "Use a list of allowed values (`as const`) and its union type, not an enum.",
-    },
-  ],
+  // Owner decision: the client address is read in one place (the repo's rate-key helper),
+  // so IPv6 clients are keyed per /64 and no route trusts a raw proxy header by hand.
+  "no-restricted-syntax": ["error", ...restrictedSyntaxEntries],
 };
 
 /**
@@ -142,6 +182,10 @@ const exportedNeedJsdoc = {
   "jsdoc/require-jsdoc": [
     "error",
     {
+      // The rule's autofix inserts an empty `/**\n *\n */` that `require-description` then
+      // rejects, so `eslint --fix` traded one finding for another. The missing JSDoc is
+      // still reported, and the author writes the description.
+      enableFixer: false,
       publicOnly: true,
       require: {
         FunctionDeclaration: true,
